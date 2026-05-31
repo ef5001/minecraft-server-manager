@@ -260,26 +260,44 @@ function renderTab(srv) {
   const content = document.getElementById('tab-content');
   if (!content) return;
   switch (state.tab) {
-    case 'overview': content.innerHTML = renderOverview(srv); break;
+    case 'overview': loadMcVersions().then(() => { content.innerHTML = renderOverview(srv); }); break;
     case 'console':  content.innerHTML = renderConsole(srv); connectLogs(srv.id); break;
     case 'files':    content.innerHTML = renderFilesShell(); loadFiles(srv.id, state.filePath); break;
     case 'backups':  content.innerHTML = renderBackupsShell(srv); loadBackups(srv.id); break;
   }
 }
 
-const VERSION_OPTIONS = ['LATEST','1.21.4','1.21.3','1.21.1','1.20.4','1.20.1','1.19.4','1.18.2','1.17.1','1.16.5'];
+let MC_VERSIONS = [];
+
+async function loadMcVersions() {
+  if (MC_VERSIONS.length) return MC_VERSIONS;
+  try {
+    MC_VERSIONS = await api('GET', '/api/servers/mc-versions');
+  } catch {
+    MC_VERSIONS = ['1.21.4','1.21.3','1.21.1','1.20.4','1.20.1','1.19.4','1.18.2','1.17.1','1.16.5'];
+  }
+  return MC_VERSIONS;
+}
+
+function versionOptions(selected) {
+  const versions = MC_VERSIONS.length ? MC_VERSIONS : ['1.21.4','1.21.3','1.21.1','1.20.4','1.20.1'];
+  const isKnown = versions.includes(selected) || selected === 'LATEST';
+  return `<option value="LATEST" ${selected === 'LATEST' ? 'selected' : ''}>Latest</option>`
+    + versions.map(v => `<option value="${v}" ${selected === v ? 'selected' : ''}>${v}</option>`).join('')
+    + `<option value="__custom__" ${!isKnown ? 'selected' : ''}>Custom…</option>`;
+}
 
 function renderVersionCard(srv) {
   if (srv.running) {
     return `<div class="info-card"><label>Version</label><span>${esc(srv.version)}</span></div>`;
   }
-  const isKnown = VERSION_OPTIONS.includes(srv.version);
+  const versions = MC_VERSIONS.length ? MC_VERSIONS : [];
+  const isKnown = versions.includes(srv.version) || srv.version === 'LATEST';
   return `<div class="info-card">
     <label>Version</label>
     <div style="display:flex;gap:6px;align-items:center;margin-top:2px">
       <select id="version-edit-select" style="flex:1;padding:4px 6px;font-size:13px">
-        ${VERSION_OPTIONS.map(v => `<option value="${v}" ${srv.version === v ? 'selected' : ''}>${v === 'LATEST' ? 'Latest' : v}</option>`).join('')}
-        <option value="__custom__" ${!isKnown ? 'selected' : ''}>Custom…</option>
+        ${versionOptions(srv.version)}
       </select>
       <button class="btn btn-sm btn-primary" data-action="save-version">Save</button>
     </div>
@@ -718,10 +736,17 @@ function appendLog(raw) {
 
 // ── Modals ─────────────────────────────────────────────────────────────────
 
-function showCreateModal() {
+async function showCreateModal() {
   document.getElementById('modal-overlay').classList.remove('hidden');
   document.getElementById('create-form').reset();
   document.querySelector('[name="name"]').focus();
+
+  const select = document.getElementById('version-select');
+  if (select) {
+    select.innerHTML = '<option value="LATEST">Loading…</option>';
+    await loadMcVersions();
+    select.innerHTML = versionOptions('LATEST');
+  }
 }
 
 function hideCreateModal() {

@@ -8,6 +8,24 @@ const docker = require('../services/docker');
 const store = require('../services/serverStore');
 const backup = require('../services/backupService');
 
+// GET /api/servers/mc-versions — fetches release versions from Mojang, cached for 1 hour
+let versionCache = null;
+let versionCacheTime = 0;
+
+router.get('/mc-versions', async (req, res) => {
+  try {
+    if (!versionCache || Date.now() - versionCacheTime > 3600000) {
+      const resp = await fetch('https://launchermeta.mojang.com/mc/game/version_manifest.json');
+      const data = await resp.json();
+      versionCache = data.versions.filter(v => v.type === 'release').map(v => v.id);
+      versionCacheTime = Date.now();
+    }
+    res.json(versionCache);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 function pickPort(preferred, used) {
   let port = preferred || 25565;
   while (used.includes(port)) port++;
