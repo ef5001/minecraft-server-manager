@@ -83,7 +83,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/servers/:id
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const server = store.get(req.params.id);
   if (!server) return res.status(404).json({ error: 'Server not found' });
 
@@ -91,6 +91,18 @@ router.put('/:id', (req, res) => {
   const updates = {};
   for (const key of allowed) {
     if (req.body[key] !== undefined) updates[key] = req.body[key];
+  }
+
+  // If version or type changed, remove the existing container so it gets
+  // recreated with the new env vars on next start. World data is untouched.
+  const containerRelevantChanged = ['version', 'type', 'memory'].some(
+    k => updates[k] !== undefined && updates[k] !== server[k]
+  );
+  if (containerRelevantChanged && server.containerId) {
+    try {
+      await docker.removeContainer(server.containerId);
+    } catch {}
+    updates.containerId = null;
   }
 
   res.json(store.save({ ...server, ...updates }));

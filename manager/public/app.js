@@ -633,7 +633,7 @@ async function saveVersion(serverId) {
     await api('PUT', `/api/servers/${serverId}`, { version });
     const srv = state.servers.find(s => s.id === serverId);
     if (srv) srv.version = version;
-    toast(`Version set to ${version} — takes effect on next start`);
+    toast(`Version set to ${version} — container will be recreated on next start`);
     // Re-render overview with updated version
     const content = document.getElementById('tab-content');
     if (content && state.tab === 'overview') content.innerHTML = renderOverview({ ...srv, version });
