@@ -15,7 +15,8 @@ function serverDataDir(serverId) {
 
 function safePath(serverId, rel) {
   const base = serverDataDir(serverId);
-  const resolved = path.resolve(base, rel || '');
+  const stripped = (rel || '').replace(/^\/+/, ''); // treat all paths as relative to base
+  const resolved = path.resolve(base, stripped);
   if (!resolved.startsWith(base)) throw new Error('Path traversal not allowed');
   return resolved;
 }
