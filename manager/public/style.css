@@ -306,6 +306,27 @@ body {
   gap: 6px;
 }
 
+/* ── Quick folders ── */
+.quick-folders {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.quick-folder-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  padding: 5px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+  white-space: nowrap;
+}
+.quick-folder-btn:hover { background: var(--surface2); color: var(--text); }
+.quick-folder-btn.active { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 600; }
+
 /* ── Files tab ── */
 .files-toolbar {
   display: flex;

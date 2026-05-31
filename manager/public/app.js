@@ -307,8 +307,22 @@ function renderConsole(srv) {
     </div>`;
 }
 
+const QUICK_FOLDERS = [
+  { path: '/',        label: '🏠 Root' },
+  { path: '/mods',    label: '🧩 Mods' },
+  { path: '/plugins', label: '🔌 Plugins' },
+  { path: '/config',  label: '⚙️ Config' },
+  { path: '/world',   label: '🌍 World' },
+];
+
 function renderFilesShell() {
   return `
+    <div class="quick-folders" id="quick-folders">
+      ${QUICK_FOLDERS.map(f => `
+        <button class="quick-folder-btn ${state.filePath === f.path ? 'active' : ''}"
+                data-action="nav-files" data-path="${esc(f.path)}">${esc(f.label)}</button>
+      `).join('')}
+    </div>
     <div class="files-toolbar">
       <div class="breadcrumb" id="breadcrumb">/ </div>
       <div class="file-actions">
@@ -319,7 +333,7 @@ function renderFilesShell() {
       </div>
     </div>
     <div class="drop-zone" id="drop-zone">
-      Drop files here to upload to current directory
+      Drop files here to upload to <strong id="drop-zone-path">${esc(state.filePath)}</strong>
     </div>
     <div id="upload-progress" class="upload-progress hidden"></div>
     <div id="file-list-container"></div>`;
@@ -362,6 +376,15 @@ async function loadFiles(serverId, filePath) {
     state.files = entries;
     renderFileList(serverId, filePath, entries);
     renderBreadcrumb(filePath);
+
+    // Sync quick folder active state
+    document.querySelectorAll('.quick-folder-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.path === filePath);
+    });
+
+    // Update drop zone label
+    const dzPath = document.getElementById('drop-zone-path');
+    if (dzPath) dzPath.textContent = filePath;
   } catch (e) {
     toast(e.message, 'error');
   }
