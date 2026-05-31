@@ -1,7 +1,6 @@
 services:
   manager:
-    build:
-      context: https://github.com/ef5001/minecraft-server-manager.git#master:manager
+    image: ghcr.io/ef5001/minecraft-server-manager:latest
     ports:
       - "3000:3000"
     volumes:
@@ -11,7 +10,6 @@ services:
     environment:
       - DATA_DIR=/data
       - BACKUP_DIR=/backups
-      # Change this if your Dockge stack is named differently
       - HOST_DATA_DIR=/opt/stacks/minecraft-server-manager/data
       - MC_NETWORK=mc-manager-net
       - MANAGER_PORT=3000
