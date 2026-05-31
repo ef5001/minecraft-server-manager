@@ -1,0 +1,22 @@
+services:
+  manager:
+    build: ./manager
+    ports:
+      - "3000:3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/data
+      - ./backups:/backups
+    environment:
+      - DATA_DIR=/data
+      - BACKUP_DIR=/backups
+      - HOST_DATA_DIR=${PWD}/data
+      - MC_NETWORK=mc-manager-net
+      - MANAGER_PORT=3000
+    restart: unless-stopped
+    networks:
+      - mc-manager-net
+
+networks:
+  mc-manager-net:
+    driver: bridge

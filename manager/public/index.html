@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MC Manager</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <div class="header-brand">
+        <span class="header-icon">⛏</span>
+        <span class="header-title">MC Manager</span>
+      </div>
+      <button class="btn btn-primary" id="new-server-btn">+ New Server</button>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-label">SERVERS</div>
+        <div id="server-list" class="server-list"></div>
+      </aside>
+
+      <main class="main" id="main">
+        <div class="empty-state">
+          <div class="empty-icon">🎮</div>
+          <h2>No server selected</h2>
+          <p>Select a server from the sidebar or create a new one to get started.</p>
+          <button class="btn btn-primary" id="empty-new-btn">+ New Server</button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Create Server Modal -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Create New Server</h3>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="create-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Server Name *</label>
+              <input type="text" name="name" placeholder="My Server" required>
+            </div>
+            <div class="form-group">
+              <label>Server Type</label>
+              <select name="type">
+                <option value="PAPER">Paper (Recommended)</option>
+                <option value="VANILLA">Vanilla</option>
+                <option value="FABRIC">Fabric</option>
+                <option value="FORGE">Forge</option>
+                <option value="SPIGOT">Spigot</option>
+                <option value="PURPUR">Purpur</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Minecraft Version</label>
+              <input type="text" name="version" placeholder="LATEST">
+            </div>
+            <div class="form-group">
+              <label>Memory</label>
+              <select name="memory">
+                <option value="1G">1 GB</option>
+                <option value="2G" selected>2 GB</option>
+                <option value="4G">4 GB</option>
+                <option value="6G">6 GB</option>
+                <option value="8G">8 GB</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Game Mode</label>
+              <select name="gamemode">
+                <option value="survival">Survival</option>
+                <option value="creative">Creative</option>
+                <option value="adventure">Adventure</option>
+                <option value="spectator">Spectator</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Difficulty</label>
+              <select name="difficulty">
+                <option value="peaceful">Peaceful</option>
+                <option value="easy">Easy</option>
+                <option value="normal" selected>Normal</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Max Players</label>
+              <input type="number" name="maxPlayers" value="20" min="1" max="100">
+            </div>
+            <div class="form-group">
+              <label>Port (auto-assigned if blank)</label>
+              <input type="number" name="port" placeholder="25565">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>MOTD</label>
+            <input type="text" name="motd" placeholder="A Minecraft Server">
+          </div>
+          <label class="checkbox-label eula-label">
+            <input type="checkbox" name="eula" id="eula-check">
+            I agree to the <a href="https://aka.ms/MinecraftEULA" target="_blank" rel="noopener" style="color:var(--blue)">Minecraft End User License Agreement</a>
+          </label>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="modal-submit">Create Server</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div id="delete-overlay" class="modal-overlay hidden">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h3>Delete Server</h3>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete <strong id="delete-server-name"></strong>?</p>
+        <label class="checkbox-label">
+          <input type="checkbox" id="delete-data-check">
+          Also delete all server data (worlds, configs, mods)
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="delete-cancel">Cancel</button>
+        <button class="btn btn-danger" id="delete-confirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
