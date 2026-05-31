@@ -62,7 +62,20 @@
           <div class="form-row">
             <div class="form-group">
               <label>Minecraft Version</label>
-              <input type="text" name="version" placeholder="LATEST">
+              <select name="version" id="version-select">
+                <option value="LATEST">Latest</option>
+                <option value="1.21.4">1.21.4</option>
+                <option value="1.21.3">1.21.3</option>
+                <option value="1.21.1">1.21.1</option>
+                <option value="1.20.4">1.20.4</option>
+                <option value="1.20.1">1.20.1</option>
+                <option value="1.19.4">1.19.4</option>
+                <option value="1.18.2">1.18.2</option>
+                <option value="1.17.1">1.17.1</option>
+                <option value="1.16.5">1.16.5</option>
+                <option value="__custom__">Custom…</option>
+              </select>
+              <input type="text" name="version-custom" id="version-custom" placeholder="e.g. 1.21.2" style="display:none;margin-top:6px">
             </div>
             <div class="form-group">
               <label>Memory</label>

@@ -267,12 +267,34 @@ function renderTab(srv) {
   }
 }
 
+const VERSION_OPTIONS = ['LATEST','1.21.4','1.21.3','1.21.1','1.20.4','1.20.1','1.19.4','1.18.2','1.17.1','1.16.5'];
+
+function renderVersionCard(srv) {
+  if (srv.running) {
+    return `<div class="info-card"><label>Version</label><span>${esc(srv.version)}</span></div>`;
+  }
+  const isKnown = VERSION_OPTIONS.includes(srv.version);
+  return `<div class="info-card">
+    <label>Version</label>
+    <div style="display:flex;gap:6px;align-items:center;margin-top:2px">
+      <select id="version-edit-select" style="flex:1;padding:4px 6px;font-size:13px">
+        ${VERSION_OPTIONS.map(v => `<option value="${v}" ${srv.version === v ? 'selected' : ''}>${v === 'LATEST' ? 'Latest' : v}</option>`).join('')}
+        <option value="__custom__" ${!isKnown ? 'selected' : ''}>Custom…</option>
+      </select>
+      <button class="btn btn-sm btn-primary" data-action="save-version">Save</button>
+    </div>
+    <input type="text" id="version-edit-custom" placeholder="e.g. 1.21.2"
+           value="${!isKnown ? esc(srv.version) : ''}"
+           style="margin-top:6px;font-size:12px;${!isKnown ? '' : 'display:none'}">
+  </div>`;
+}
+
 function renderOverview(srv) {
   return `
     <div class="section-title">Server Info</div>
     <div class="info-grid">
       <div class="info-card"><label>Type</label><span>${esc(srv.type)}</span></div>
-      <div class="info-card"><label>Version</label><span>${esc(srv.version)}</span></div>
+      ${renderVersionCard(srv)}
       <div class="info-card"><label>Port</label><span>${esc(srv.port)}</span></div>
       <div class="info-card"><label>Memory</label><span>${esc(srv.memory)}</span></div>
       <div class="info-card"><label>Max Players</label><span>${esc(srv.maxPlayers)}</span></div>
@@ -603,6 +625,23 @@ async function deleteBackup(serverId, filename) {
   }
 }
 
+async function saveVersion(serverId) {
+  const select = document.getElementById('version-edit-select');
+  const custom = document.getElementById('version-edit-custom');
+  let version = select.value === '__custom__' ? (custom.value.trim() || 'LATEST') : select.value;
+  try {
+    await api('PUT', `/api/servers/${serverId}`, { version });
+    const srv = state.servers.find(s => s.id === serverId);
+    if (srv) srv.version = version;
+    toast(`Version set to ${version} — takes effect on next start`);
+    // Re-render overview with updated version
+    const content = document.getElementById('tab-content');
+    if (content && state.tab === 'overview') content.innerHTML = renderOverview({ ...srv, version });
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
 async function saveSchedule(serverId) {
   const select = document.getElementById('schedule-select');
   const custom = document.getElementById('schedule-custom');
@@ -694,6 +733,7 @@ async function submitCreateServer() {
   const data = Object.fromEntries(new FormData(form));
   if (!data.name.trim()) { toast('Server name is required', 'error'); return; }
   if (!data.eula) { toast('You must accept the Minecraft EULA to continue', 'warn'); return; }
+  if (data.version === '__custom__') data.version = (data['version-custom'] || '').trim() || 'LATEST';
 
   const btn = document.getElementById('modal-submit');
   btn.disabled = true;
@@ -750,6 +790,7 @@ document.addEventListener('click', async (e) => {
     case 'create-backup': createBackup(state.selected); break;
     case 'del-backup': deleteBackup(state.selected, el.dataset.filename); break;
     case 'save-schedule': saveSchedule(state.selected); break;
+    case 'save-version': saveVersion(state.selected); break;
   }
 });
 
@@ -778,6 +819,14 @@ document.getElementById('delete-confirm').addEventListener('click', () => {
 document.addEventListener('change', (e) => {
   if (e.target.id === 'schedule-select') {
     const custom = document.getElementById('schedule-custom');
+    if (custom) custom.style.display = e.target.value === '__custom__' ? '' : 'none';
+  }
+  if (e.target.id === 'version-select') {
+    const custom = document.getElementById('version-custom');
+    if (custom) custom.style.display = e.target.value === '__custom__' ? '' : 'none';
+  }
+  if (e.target.id === 'version-edit-select') {
+    const custom = document.getElementById('version-edit-custom');
     if (custom) custom.style.display = e.target.value === '__custom__' ? '' : 'none';
   }
 });
